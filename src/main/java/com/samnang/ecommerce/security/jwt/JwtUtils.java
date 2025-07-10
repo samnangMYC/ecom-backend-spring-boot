@@ -44,6 +44,7 @@ public class JwtUtils {
         String jwt = generateTokenFromUsername(userDetails.getUsername());
         ResponseCookie cookie = ResponseCookie.from(jwtCookie,jwt).path("/api")
                 .httpOnly(false)
+                .secure(false) // true when in production but false for test case
                 .build();
         return cookie;
     }

@@ -6,6 +6,7 @@ import com.samnang.ecommerce.models.Cart;
 import com.samnang.ecommerce.models.CartItem;
 import com.samnang.ecommerce.models.Product;
 import com.samnang.ecommerce.payload.CartDTO;
+import com.samnang.ecommerce.payload.CartItemDTO;
 import com.samnang.ecommerce.payload.ProductDTO;
 import com.samnang.ecommerce.repositories.CartItemRepository;
 import com.samnang.ecommerce.repositories.CartRepository;
@@ -241,6 +242,52 @@ public class CartServiceImpl implements CartService {
         cart.setTotalPrice(cartPrice + (cartItem.getProductPrice() * cartItem.getQuantity()));
 
         cartItem = cartItemRepository.save(cartItem);
+    }
+
+    @Override
+    public String createOrUpdateCartWithItem(List<CartItemDTO> cartItems) {
+        String emailId = authUtil.loggedInEmail();
+
+        Cart existingCart = cartRepository.findCartByEmail(emailId);
+
+        if (existingCart == null) {
+             existingCart = new Cart();
+             existingCart.setTotalPrice(0.00);
+             existingCart.setUser(authUtil.loggedInUser());
+             cartRepository.save(existingCart);
+        }else {
+            // if cart represent delete all cart exist
+            cartItemRepository.deleteAllByCartId(existingCart.getId());
+
+            double totalPrice = 0.0;
+            for (CartItemDTO cartItemDTO : cartItems) {
+                Long productId = cartItemDTO.getProductId();
+
+                Integer quantity = cartItemDTO.getQuantity();
+
+                //Find product by id
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+              //  product.setQuantity(product.getQuantity() - quantity);
+                productRepository.save(product);
+
+                totalPrice += product.getSpecialPrice()  * quantity;
+
+                CartItem cartItem = new CartItem();
+                    cartItem.setProduct(product);
+                    cartItem.setCart(existingCart);
+                    cartItem.setProductPrice(product.getSpecialPrice());
+                    cartItem.setQuantity(quantity);
+                    cartItem.setDiscount(product.getDiscount());
+                    cartItemRepository.save(cartItem);
+            }
+            existingCart.setTotalPrice(totalPrice);
+            existingCart.setUser(authUtil.loggedInUser());
+            cartRepository.save(existingCart);
+
+        }
+        return "Cart added successfully!!!";
     }
 
     private Cart createCart() {

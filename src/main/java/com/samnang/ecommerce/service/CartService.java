@@ -1,6 +1,7 @@
 package com.samnang.ecommerce.service;
 
 import com.samnang.ecommerce.payload.CartDTO;
+import com.samnang.ecommerce.payload.CartItemDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface CartService {
     String deleteProductFromCart(Long cartId, Long productId);
 
     void updateProductInCarts(Long cartId, Long productId);
+
+    String createOrUpdateCartWithItem(List<CartItemDTO> cartItems);
 }

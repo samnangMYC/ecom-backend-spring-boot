@@ -2,6 +2,7 @@ package com.samnang.ecommerce.controller;
 
 import com.samnang.ecommerce.models.Cart;
 import com.samnang.ecommerce.payload.CartDTO;
+import com.samnang.ecommerce.payload.CartItemDTO;
 import com.samnang.ecommerce.repositories.CartRepository;
 import com.samnang.ecommerce.service.CartService;
 import com.samnang.ecommerce.util.AuthUtil;
@@ -23,6 +24,14 @@ public class CartController {
     private AuthUtil authUtil;
     @Autowired
     private CartRepository cartRepository;
+
+
+    @PostMapping("/cart/create")
+    public ResponseEntity<String> createOrUpdateCart(@RequestBody List<CartItemDTO> cartItems) {
+        String response = cartService.createOrUpdateCartWithItem(cartItems);
+        return new ResponseEntity<String>(response, HttpStatus.OK);
+    }
+
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long productId,
